@@ -1,0 +1,154 @@
+/* Import Bold Anime-Style Font */
+@import url('https://fonts.googleapis.com/css2?family=Bangers&display=swap');
+
+/* General Page Styling */
+body {
+    font-family: 'Bangers', cursive;
+    background: radial-gradient(circle at top, #ff7f00, #ff5200, #0d1b4c);
+    background-attachment: fixed;
+    color: #fff8e1;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Main Container */
+.container {
+    background: linear-gradient(145deg, rgba(13, 27, 76, 0.95), rgba(255, 127, 0, 0.9));
+    border: 5px solid #ffd700;
+    border-radius: 20px;
+    padding: 40px 50px;
+    display: inline-block;
+    box-shadow: 0 0 50px rgba(255, 215, 0, 0.8), inset 0 0 25px rgba(255, 200, 0, 0.5);
+    max-width: 800px;
+    width: 90%;
+    animation: auraGlow 2s infinite alternate;
+}
+
+/* Goku Ki Aura Animation */
+@keyframes auraGlow {
+    0% { box-shadow: 0 0 40px rgba(255, 200, 0, 0.7), inset 0 0 20px rgba(255, 150, 0, 0.4); }
+    100% { box-shadow: 0 0 80px rgba(255, 230, 0, 1), inset 0 0 40px rgba(255, 200, 0, 0.8); }
+}
+
+/* Headings */
+h1 {
+    font-size: 3.5em;
+    margin-bottom: 0.2em;
+    color: #ffd700;
+    text-shadow: 4px 4px 0 #000, 0 0 25px rgba(255, 230, 0, 0.9);
+}
+.subtitle {
+    font-size: 1.3em;
+    color: #fff4c2;
+    margin-bottom: 30px;
+}
+h1::before {
+    content: "🟠⚡ ";
+}
+h1::after {
+    content: " ⚡🫏";
+}
+
+/* Status Box */
+.status-box {
+    background: rgba(255, 215, 0, 0.15);
+    border: 2px solid #ffd700;
+    border-radius: 12px;
+    padding: 15px;
+    font-size: 1.1em;
+    margin-bottom: 25px;
+    box-shadow: inset 0 0 15px rgba(255, 215, 0, 0.5);
+}
+
+/* Control Buttons */
+.controls {
+    margin-bottom: 25px;
+}
+button, .btn {
+    padding: 14px 26px;
+    margin: 10px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.2em;
+    cursor: pointer;
+    color: white;
+    font-weight: bold;
+    letter-spacing: 1px;
+    transition: transform 0.2s ease-in-out, background 0.3s, box-shadow 0.3s;
+}
+
+/* Start Button - Goku's Orange Gi */
+.btn-start {
+    background: linear-gradient(#ff7f00, #cc5e00);
+    border: 2px solid #ffd700;
+    box-shadow: 0 0 15px #ffae00;
+}
+.btn-start:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 30px #ffd700;
+}
+
+/* Stop Button - Enemy Red Energy */
+.btn-stop {
+    background: linear-gradient(#ff0000, #990000);
+    border: 2px solid #ff4d4d;
+    box-shadow: 0 0 15px #ff4d4d;
+}
+.btn-stop:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 30px #ff0000;
+}
+
+/* Replay Button - Super Saiyan Aura */
+.btn-replay {
+    background: linear-gradient(#ffea00, #ccaa00);
+    border: 2px solid #fff200;
+    color: #000;
+    text-shadow: 0 0 5px #fff200;
+    box-shadow: 0 0 15px #fff200;
+}
+.btn-replay:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 35px #fff200;
+}
+
+/* Output Box */
+.output {
+    background: rgba(255, 215, 0, 0.08);
+    border: 2px solid #ffd700;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: left;
+    display: inline-block;
+    max-width: 600px;
+    width: 90%;
+    box-shadow: inset 0 0 15px rgba(255, 215, 0, 0.4);
+}
+
+/* Highlighted Text */
+.highlight {
+    color: #ffeb3b;
+    font-weight: bold;
+}
+
+/* Footer */
+.footer {
+    position: fixed;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.9em;
+    color: rgb(238, 240, 250);
+}
+.footer a {
+    color: #a7973c;
+    text-decoration: none;
+}
+.footer a:hover {
+    text-decoration: underline;
+}
