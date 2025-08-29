@@ -1,40 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎤 AI Public Speaking Heckler</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🎤 AI Public Speaking Coach</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <div class="container">
-        <h1>🎤 AI Public Speaking Heckler</h1>
-        <p class="subtitle">Test your public speaking skills... if you dare!</p>
+  <div class="container">
+    <h1>🎤 AI Public Speaking Coach</h1>
+    <p class="subtitle">Practice, get instant feedback, grow confidence.</p>
 
-        <!-- Status display -->
-        <div class="status-box" id="status">Click "Start Session" to begin</div>
+    <div class="status-box" id="status">Click “Start Session” to begin</div>
 
-        <!-- Buttons -->
-        <div class="controls">
-            <button id="startBtn" class="btn btn-start">🎙 Start Session</button>
-            <button id="stopBtn" class="btn btn-stop" disabled>⏹ Stop Session</button>
-            <button id="replayBtn" class="btn btn-replay">🔁 Replay Last Heckle</button>
-        </div>
-
-        <!-- Output section -->
-        <div class="output">
-            <h3>Transcript</h3>
-            <p id="transcript" class="highlight">---</p>
-
-            <h3>Heckle</h3>
-            <p id="heckle" class="highlight">---</p>
-        </div>
+    <div class="controls">
+      <button id="startBtn" class="btn btn-start">🎙 Start Session</button>
+      <button id="stopBtn" class="btn btn-stop" disabled>⏹ Stop & Analyze</button>
+      <button id="exitBtn" class="btn btn-exit">🚪 Exit</button>
     </div>
 
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <div class="output">
+      <h3>Transcript</h3>
+      <p id="transcript" class="highlight">—</p>
+
+      <h3>Feedback</h3>
+      <p id="feedback" class="highlight">—</p>
+
+      <div id="metrics" class="metrics"></div>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
-<!-- Footer -->
-<div class="footer">
-    © 2025 AI Public Speaking Heckler. All rights are reserved through TIMT. If not, then I don't give a flush.
-</div>

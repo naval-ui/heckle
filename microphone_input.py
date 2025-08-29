@@ -5,53 +5,50 @@ import tempfile
 import time
 
 fs = 44100
-recording_data = []
-recording_start_time = None
-is_recording = False
-stream = None  # <-- Store the stream object
-
+_recording_data = []
+_recording_start_time = None
+_is_recording = False
+_stream = None
 
 def start_recording():
-    global recording_data, recording_start_time, is_recording, stream
-    recording_data = []
-    is_recording = True
-    recording_start_time = time.time()
+    global _recording_data, _recording_start_time, _is_recording, _stream
+    if _is_recording:
+        return  # already recording
+    _recording_data = []
+    _is_recording = True
+    _recording_start_time = time.time()
 
     def callback(indata, frames, time_info, status):
         if status:
             print(status)
-        if is_recording:
-            recording_data.append(indata.copy())
+        if _is_recording:
+            _recording_data.append(indata.copy())
 
-    stream = sd.InputStream(callback=callback, channels=1, samplerate=fs)
-    stream.start()  # <-- Start the stream
+    _stream = sd.InputStream(callback=callback, channels=1, samplerate=fs)
+    _stream.start()
     print("🎙 Recording started...")
 
-
 def stop_recording():
-    global is_recording, stream
-    is_recording = False
+    global _is_recording, _stream, _recording_start_time, _recording_data
+    if not _is_recording:
+        raise RuntimeError("Recording is not running.")
 
-    if stream:
-        stream.stop()   # <-- Stop the stream
-        stream.close()  # <-- Close the stream
-        stream = None
+    _is_recording = False
 
-    duration = time.time() - recording_start_time
-    audio = np.concatenate(recording_data, axis=0)
+    if _stream:
+        _stream.stop()
+        _stream.close()
+        _stream = None
+
+    duration = time.time() - (_recording_start_time or time.time())
+    audio = np.concatenate(_recording_data, axis=0) if _recording_data else np.zeros((1,1))
 
     temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".wav")
     wav.write(temp_file.name, fs, (audio * 32767).astype(np.int16))
 
-    print(f"🛑 Recording stopped. Duration: {duration:.2f} sec")
+    # reset
+    _recording_data = []
+    _recording_start_time = None
+
+    print(f"🛑 Recording stopped. Duration: {duration:.2f}s -> {temp_file.name}")
     return temp_file.name, duration
-
-
-def record_and_reduce_noise(duration=10):
-    """
-    Keeps compatibility for old code expecting a timed recording.
-    """
-    print(f"🎙 Timed recording for {duration} seconds...")
-    start_recording()
-    time.sleep(duration)
-    return stop_recording()

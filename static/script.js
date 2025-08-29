@@ -1,88 +1,70 @@
-document.getElementById("startBtn").onclick = async () => {
-    const statusEl = document.getElementById("status");
-    const transcriptEl = document.getElementById("transcript");
-    const heckleEl = document.getElementById("heckle");
+const statusEl = document.getElementById("status");
+const transcriptEl = document.getElementById("transcript");
+const feedbackEl = document.getElementById("feedback");
+const startBtn = document.getElementById("startBtn");
+const stopBtn = document.getElementById("stopBtn");
+const exitBtn = document.getElementById("exitBtn");
+const metricsEl = document.getElementById("metrics");
 
-    statusEl.textContent = "🎙 Recording... Speak now!";
-    statusEl.style.backgroundColor = "rgba(255, 153, 0, 0.58)";
-    document.getElementById("startBtn").disabled = true;
-    document.getElementById("stopBtn").disabled = false;
+startBtn.onclick = async () => {
+  statusEl.textContent = "🎙 Recording... Speak now!";
+  startBtn.disabled = true;
+  stopBtn.disabled = false;
 
-    try {
-        const res = await fetch("/start", { method: "POST" });
-        const data = await res.json();
-        if (data.error) {
-            statusEl.textContent = "❌ Error starting recording!";
-            statusEl.style.backgroundColor = "rgba(199, 50, 40, 0.3)";
-            console.error(data.error);
-        }
-    } catch (err) {
-        console.error("Error:", err);
-        statusEl.textContent = "❌ Error starting recording!";
-        statusEl.style.backgroundColor = "rgba(199, 50, 40, 0.3)";
+  try {
+    const res = await fetch("/start", { method: "POST" });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+  } catch (e) {
+    statusEl.textContent = "❌ Error starting recording.";
+    startBtn.disabled = false;
+    stopBtn.disabled = true;
+    console.error(e);
+  }
+};
+
+stopBtn.onclick = async () => {
+  statusEl.textContent = "⏳ Processing...";
+  stopBtn.disabled = true;
+
+  try {
+    const res = await fetch("/stop", { method: "POST" });
+    const data = await res.json();
+
+    if (data.error) {
+      statusEl.textContent = "❌ Error processing!";
+      console.error(data.error);
+      return;
     }
+
+    transcriptEl.textContent = data.transcript && data.transcript.trim() !== "" ? data.transcript : "(No clear speech detected)";
+    feedbackEl.textContent = data.feedback || "—";
+
+    // Show metrics
+    const m = data.metrics || {};
+    metricsEl.innerHTML = `
+      <div><b>Words:</b> ${m.word_count ?? "-"}</div>
+      <div><b>WPM:</b> ${m.wpm ?? "-"}</div>
+      <div><b>Filler words:</b> ${m.filler_words ?? "-"}</div>
+      <div><b>Sentiment:</b> ${m.sentiment ?? "-"}</div>
+    `;
+
+    statusEl.textContent = "✅ Done!";
+  } catch (e) {
+    statusEl.textContent = "❌ Error processing!";
+    console.error(e);
+  } finally {
+    startBtn.disabled = false;
+  }
 };
 
-document.getElementById("stopBtn").onclick = async () => {
-    const statusEl = document.getElementById("status");
-    const transcriptEl = document.getElementById("transcript");
-    const heckleEl = document.getElementById("heckle");
-
-    statusEl.textContent = "⏳ Processing...";
-    statusEl.style.backgroundColor = "rgba(255, 235, 59, 0.3)";
-    document.getElementById("startBtn").disabled = false;
-    document.getElementById("stopBtn").disabled = true;
-
-    try {
-        const res = await fetch("/stop", { method: "POST" });
-        const data = await res.json();
-
-        console.log('Recording stopped:', data);
-
-        // Force heckle to "Coward!"
-        heckleEl.innerText = "Coward!";
-
-        if (data.error) {
-            statusEl.textContent = "❌ Error processing!";
-            statusEl.style.backgroundColor = "rgba(199, 50, 40, 0.3)";
-            console.error(data.error);
-        } else {
-            transcriptEl.textContent = data.transcript || "(Silent)";
-            statusEl.textContent = "✅ Done!";
-            statusEl.style.backgroundColor = "rgba(76, 175, 80, 0.3)";
-        }
-    } catch (err) {
-        console.error("Error:", err);
-        statusEl.textContent = "❌ Error processing!";
-        statusEl.style.backgroundColor = "rgba(199, 50, 40, 0.3)";
-    }
-};
-
-document.getElementById("replayBtn").onclick = () => {
-    const statusEl = document.getElementById("status");
-    statusEl.textContent = "🔁 Replaying last heckle...";
-    statusEl.style.backgroundColor = "rgba(10, 112, 159, 0.68)";
-
-    fetch("/replay").then(() => {
-        statusEl.textContent = "✅ Done!";
-        statusEl.style.backgroundColor = "rgba(33, 221, 39, 0.83)";
-    });
-};
-
-document.getElementById("resetBtn").onclick = () => {
-    const statusEl = document.getElementById("status");
-    const transcriptEl = document.getElementById("transcript");
-    const heckleEl = document.getElementById("heckle");
-
-    statusEl.textContent = "🔄 Resetting...";
-    statusEl.style.backgroundColor = "rgba(255, 235, 59, 0.3)";
-    transcriptEl.textContent = "";
-    heckleEl.textContent = "";
-
-    fetch("/reset").then(() => {
-        statusEl.textContent = "✅ Reset!";
-        statusEl.style.backgroundColor = "rgba(33, 221, 39, 0.83)";
-        document.getElementById("startBtn").disabled = false;
-        document.getElementById("stopBtn").disabled = true;
-    });
+exitBtn.onclick = async () => {
+  statusEl.textContent = "🚪 Exiting...";
+  try {
+    await fetch("/exit", { method: "POST" });
+    // Small delay so TTS can finish
+    setTimeout(() => window.close(), 500);
+  } catch (e) {
+    console.error(e);
+  }
 };
