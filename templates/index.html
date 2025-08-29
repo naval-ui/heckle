@@ -1,35 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>🎤 AI Public Speaking Coach</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="UTF-8">
+  <title>AI Public Speaking Heckler</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-  <div class="container">
-    <h1>🎤 AI Public Speaking Coach</h1>
-    <p class="subtitle">Practice, get instant feedback, grow confidence.</p>
+  <div class="stage">
+    <h1>🎤 AI Public Speaking Heckler</h1>
+    <p id="status">Press Start to begin speaking...</p>
 
-    <div class="status-box" id="status">Click “Start Session” to begin</div>
-
-    <div class="controls">
-      <button id="startBtn" class="btn btn-start">🎙 Start Session</button>
-      <button id="stopBtn" class="btn btn-stop" disabled>⏹ Stop & Analyze</button>
-      <button id="exitBtn" class="btn btn-exit">🚪 Exit</button>
+    <div class="buttons">
+      <button id="startBtn">🎙 Start Recording</button>
+      <button id="stopBtn" disabled>⏹ Stop & Analyze</button>
+      <button id="replayBtn" disabled>🔁 Replay Heckle</button>
+      <button id="exitBtn">🚪 Exit</button>
     </div>
 
     <div class="output">
-      <h3>Transcript</h3>
-      <p id="transcript" class="highlight">—</p>
+      <div class="card">
+        <h2>Transcript</h2>
+        <div id="transcript" class="box"></div>
+      </div>
 
-      <h3>Feedback</h3>
-      <p id="feedback" class="highlight">—</p>
+      <div class="card">
+        <h2>Feedback</h2>
+        <div id="feedback" class="box"></div>
+      </div>
 
-      <div id="metrics" class="metrics"></div>
+      <div class="card">
+        <h2>Metrics</h2>
+        <canvas id="metricsChart" height="150"></canvas>
+      </div>
+
+      <div class="card">
+        <h2>Waveform</h2>
+        <canvas id="waveform" class="waveform-placeholder" height="80"></canvas>
+      </div>
     </div>
   </div>
 
-  <script src="{{ url_for('static', filename='script.js') }}"></script>
+  <script src="/static/script.js"></script>
 </body>
 </html>

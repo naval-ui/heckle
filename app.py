@@ -3,6 +3,7 @@ from microphone_input import start_recording, stop_recording
 from speech_to_text import transcribe_audio
 from speech_analysis import is_silent, analyze_and_summarize
 from text_to_speech import speak
+from heckle_engine import generate_feedback
 import threading
 import webbrowser
 import traceback
@@ -10,11 +11,14 @@ import os
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
 
-# ===== Routes =====
+# Globals
+audio_file_path = ""
+
 
 @app.route("/")
 def index():
     return render_template("index.html")
+
 
 @app.route("/start", methods=["POST"])
 def start_session():
@@ -26,44 +30,38 @@ def start_session():
         traceback.print_exc()
         return jsonify({"error": f"Failed to start recording: {e}"}), 500
 
+
 @app.route("/stop", methods=["POST"])
 def stop_session():
-    """
-    Stop recording, transcribe, analyze, and generate feedback.
-    """
+    global audio_file_path
+
     try:
         audio_file, duration_sec = stop_recording()
+        audio_file_path = audio_file
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": f"Failed to stop recording: {e}"}), 500
 
     try:
-        # 1) Silence check (fast)
-        try:
-            if is_silent(audio_file, silence_threshold=120):
-                transcript = ""
-                feedback = "I couldn't hear much. Try speaking closer to the mic with steady volume."
-                speak(feedback)
-                return jsonify({
-                    "transcript": transcript,
-                    "feedback": feedback
-                }), 200
-        except Exception:
-            # Continue even if the silence check fails
-            pass
+        # Silence check
+        if is_silent(audio_file, silence_threshold=120):
+            feedback = "I couldn't hear much. Try speaking louder and closer to the mic."
+            speak(feedback)
+            return jsonify({
+                "transcript": "",
+                "feedback": feedback,
+                "metrics": {}
+            }), 200
 
-        # 2) Transcribe recorded audio
+        # Transcription
         transcript = transcribe_audio(audio_file)
 
-        # 3) Analyze transcript + generate constructive feedback
-        analysis = analyze_and_summarize(
-            transcript=transcript,
-            duration_sec=max(1.0, duration_sec)  # guard divide-by-zero
-        )
-        feedback = analysis["feedback_text"]
+        # Analysis + Heckle/Praise
+        analysis = analyze_and_summarize(transcript, duration_sec)
+        feedback = generate_feedback(analysis)
 
-        # 4) Speak a SHORT version so it feels snappy
-        speak(analysis["tts_summary"])
+        # Speak short version
+        speak(feedback)
 
         return jsonify({
             "transcript": transcript,
@@ -75,29 +73,24 @@ def stop_session():
         traceback.print_exc()
         msg = "Something went wrong during analysis. Try again."
         speak(msg)
-        return jsonify({"transcript": "", "feedback": msg}), 500
+        return jsonify({"transcript": "", "feedback": msg, "metrics": {}}), 500
     finally:
-        # optional: clean temp wav after processing
         try:
-            if os.path.exists(audio_file):
-                os.remove(audio_file)
+            if os.path.exists(audio_file_path):
+                os.remove(audio_file_path)
+                audio_file_path = ""
         except Exception:
             pass
 
+
 @app.route("/exit", methods=["POST"])
 def shutdown():
-    """
-    Gracefully shut down Flask without throwing socket errors on Windows.
-    """
-    # speak first (engine may block)
     try:
         speak("Exiting. See you next time.")
     except Exception:
         pass
-
-    func = request.environ.get('werkzeug.server.shutdown')
+    func = request.environ.get("werkzeug.server.shutdown")
     if func is None:
-        # Not running with the Werkzeug server (e.g., in prod)
         return jsonify({"error": "Server shutdown not available."}), 500
     try:
         func()
@@ -106,12 +99,11 @@ def shutdown():
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
+
 def open_browser():
     webbrowser.open_new("http://127.0.0.1:5000")
 
+
 if __name__ == "__main__":
-    # Opening the browser in a timer is fine; to avoid WinError 10038 during shutdown:
-    # 1) avoid the reloader threads
-    # 2) don't kill sockets from other threads while select() is polling
     threading.Timer(1.0, open_browser).start()
-    app.run(debug=False, use_reloader=False)  # <- important on Windows
+    app.run(debug=False, use_reloader=False)

@@ -15,3 +15,5 @@ def speak(text):
         engine.runAndWait()
     except RuntimeError:
         pass
+    except Exception as e:
+        print("❌ Text-to-speech error:", e)
