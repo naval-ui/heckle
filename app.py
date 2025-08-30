@@ -13,6 +13,7 @@ app = Flask(__name__, template_folder="templates", static_folder="static")
 
 # Globals
 audio_file_path = ""
+last_heckle_text = ""  # store last heckle globally
 
 
 @app.route("/")
@@ -33,7 +34,7 @@ def start_session():
 
 @app.route("/stop", methods=["POST"])
 def stop_session():
-    global audio_file_path
+    global audio_file_path, last_heckle_text
 
     try:
         audio_file, duration_sec = stop_recording()
@@ -47,6 +48,7 @@ def stop_session():
         if is_silent(audio_file, silence_threshold=120):
             feedback = "I couldn't hear much. Try speaking louder and closer to the mic."
             speak(feedback)
+            last_heckle_text = feedback
             return jsonify({
                 "transcript": "",
                 "feedback": feedback,
@@ -59,6 +61,9 @@ def stop_session():
         # Analysis + Heckle/Praise
         analysis = analyze_and_summarize(transcript, duration_sec)
         feedback = generate_feedback(analysis)
+
+        # Store last heckle for replay
+        last_heckle_text = feedback
 
         # Speak short version
         speak(feedback)
@@ -83,6 +88,19 @@ def stop_session():
             pass
 
 
+@app.route("/replay", methods=["GET"])
+def replay():
+    global last_heckle_text
+    if not last_heckle_text:
+        return jsonify({"error": "No heckle to replay."}), 404
+    try:
+        speak(last_heckle_text)
+        return jsonify({"message": "Replayed heckle"}), 200
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/exit", methods=["POST"])
 def shutdown():
     try:
@@ -90,14 +108,11 @@ def shutdown():
     except Exception:
         pass
     func = request.environ.get("werkzeug.server.shutdown")
-    if func is None:
-        return jsonify({"error": "Server shutdown not available."}), 500
-    try:
+    if func:
         func()
         return jsonify({"message": "Server shutting down..."}), 200
-    except Exception as e:
-        traceback.print_exc()
-        return jsonify({"error": str(e)}), 500
+    else:
+        return jsonify({"error": "Shutdown not supported in this environment."}), 500
 
 
 def open_browser():
